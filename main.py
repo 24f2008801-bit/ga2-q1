@@ -41,3 +41,9 @@ async def stats(values: str):
         "max": max(nums),
         "mean": sum(nums) / len(nums)
     }
+
+@app.get("/")
+
+def home():
+
+    return {"status": "running"}
