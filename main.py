@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, Request, Response
 
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -10,7 +10,17 @@ app = FastAPI()
 
 ALLOWED_ORIGIN = "https://dash-b48ubp.example.com"
 
-# Add request timing middleware FIRST
+app.add_middleware(
+
+    CORSMiddleware,
+
+    allow_origins=[ALLOWED_ORIGIN],
+
+    allow_methods=["*"],
+
+    allow_headers=["*"],
+
+)
 
 @app.middleware("http")
 
@@ -20,29 +30,19 @@ async def add_headers(request: Request, call_next):
 
     response = await call_next(request)
 
-    process_time = time.time() - start
-
     response.headers["X-Request-ID"] = str(uuid.uuid4())
 
-    response.headers["X-Process-Time"] = str(process_time)
+    response.headers["X-Process-Time"] = str(time.time() - start)
 
     return response
 
-# Add CORS AFTER middleware
+# EXPLICIT preflight handler
 
-app.add_middleware(
+@app.options("/stats")
 
-    CORSMiddleware,
+async def options_stats():
 
-    allow_origins=[ALLOWED_ORIGIN],
-
-    allow_credentials=False,
-
-    allow_methods=["*"],      # allow all methods so OPTIONS works
-
-    allow_headers=["*"],
-
-)
+    return Response(status_code=200)
 
 @app.get("/stats")
 
