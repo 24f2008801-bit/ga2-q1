@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Request, Response
+from fastapi import FastAPI, Request
 
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -10,17 +10,23 @@ app = FastAPI()
 
 ALLOWED_ORIGIN = "https://dash-b48ubp.example.com"
 
+# CORS FIRST
+
 app.add_middleware(
 
     CORSMiddleware,
 
     allow_origins=[ALLOWED_ORIGIN],
 
-    allow_methods=["*"],
+    allow_credentials=False,
+
+    allow_methods=["GET", "POST", "OPTIONS"],
 
     allow_headers=["*"],
 
 )
+
+# middleware SECOND
 
 @app.middleware("http")
 
@@ -36,19 +42,13 @@ async def add_headers(request: Request, call_next):
 
     return response
 
-# EXPLICIT preflight handler
-
-@app.options("/stats")
-
-async def options_stats():
-
-    return Response(status_code=200)
-
 @app.get("/stats")
 
 async def stats(values: str):
 
-    nums = [int(x) for x in values.split(",")]
+    nums = [int(x) for x in values.split(",")
+
+]
 
     return {
 
